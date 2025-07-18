@@ -4,8 +4,9 @@ This repository demonstrates advanced HTML smuggling techniques that bypass Secu
 
 ## Usage
 
-1. Place your test payload into the `payloads/` folder  
-2. Start a local Node.js web server:
+1. Add files to server. 
+2. Start a local Node.js web server
+3. Bypass any SWG
 
    bash
    npm install -g http-server
