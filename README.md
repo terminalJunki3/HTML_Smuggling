@@ -5,13 +5,9 @@ This repository demonstrates advanced HTML smuggling techniques that bypass Secu
 ## Usage
 
 1. Place your test payload into the `payloads/` folder  
-2. Use provided scripts in `tools/` to:
-   - Encode to steganography image  
-   - Split into chunks  
-   - Convert to Base64  
-3. Start a local Node.js web server:
+2. Start a local Node.js web server:
 
-   ```bash
+   bash
    npm install -g http-server
    http-server -p 8080
 
