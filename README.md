@@ -2,6 +2,19 @@
 
 This repository demonstrates advanced HTML smuggling techniques that bypass Secure Web Gateways (SWGs), network defenses, and file-based malware detection. Each technique reconstructs the payload on the client-side, avoiding traditional file delivery methods and perimeter detection systems.
 
+## Usage
+
+1. Place your test payload into the `payloads/` folder  
+2. Use provided scripts in `tools/` to:
+   - Encode to steganography image  
+   - Split into chunks  
+   - Convert to Base64  
+3. Start a local Node.js web server:
+
+   ```bash
+   npm install -g http-server
+   http-server -p 8080
+
 ## Overview
 
 This project includes 3 core payload delivery techniques:
