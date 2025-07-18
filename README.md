@@ -28,7 +28,8 @@ This project includes 3 core payload delivery techniques:
 ### 3. Base64-Embedded JavaScript Blob ("Embed")
 - Full binary is Base64-encoded and embedded directly in JavaScript  
 - JS reconstructs and triggers download  
-- Entire file is self-contained in the HTML page  
+- Entire file is self-contained in the HTML page
+Note: For this one, builder.py will place the update template in ouput folder. Test using the file otherwise it wont work. 
 
 ## Theory Around Why It Works
 
