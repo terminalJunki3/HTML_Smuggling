@@ -8,9 +8,9 @@ This repository demonstrates advanced HTML smuggling techniques that bypass Secu
 2. Start a local Node.js web server
 3. Bypass any SWG
 
-   bash
-   npm install -g http-server
-   http-server -p 8080
+   - bash
+   - npm install -g http-server
+   - http-server -p 8080
 
 ## Overview
 
